@@ -22,16 +22,22 @@ const authenticate = (req, res, next) => {
 // Register a new user
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
+    console.log('Register route hit with data:', { name, email, password }); // Debug incoming data
+
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const newUser = new User({ name, email, password: hashedPassword });
-        await newUser.save();
-        res.status(201).json({ message: "User registered successfully" });
+        const savedUser = await newUser.save();
+
+        console.log('User saved in DB:', savedUser); // Debug saved user
+        res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
+        console.error('Error during registration:', error); // Debug errors
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Login user and return JWT
 router.post('/login', async (req, res) => {
