@@ -12,14 +12,18 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// CORS Configuration
-app.use(
-    cors({
-        origin: process.env.CLIENT_ORIGIN || 'http://localhost:8080', // Allow frontend origin (adjust as needed)
-        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific HTTP methods
-        credentials: true, // Allow cookies and headers like Authorization
-    })
-);
+// Dynamically configure CORS
+app.use((req, res, next) => {
+    const allowedOrigins = ['http://137.184.155.248:8080', 'http://localhost:8080']; // List of allowed origins
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    next();
+});
 
 // Body parser middleware
 app.use(bodyParser.json());
@@ -29,7 +33,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/chart', chartRoutes);
 
-// Handle undefined routes (Optional)
+// Handle undefined routes
 app.use((req, res) => {
     res.status(404).json({ message: 'Endpoint not found' });
 });
